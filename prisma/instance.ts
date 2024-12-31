@@ -1,25 +1,22 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-}) as PrismaClient & { $on(event: 'beforeExit', callback: () => void): void };
-
-// log when prisma is disconnecting
-prisma.$on('beforeExit', () => {
-	console.log('Disconnecting Prisma');
-});
-
-console.log('is this being run ???????????')
-// Test the database connection and log a success message
-async function testDatabaseConnection() {
-  try {
-    await prisma.$queryRaw`SELECT 1`; // Simple query to check the connection
-    console.log('Connected to the database successfully!');
-  } catch (error) {
-    console.error('Failed to connect to the database:', error);
-  }
+// Declare `global` type to handle Prisma client
+declare global {
+  // This avoids TypeScript errors for `global.prisma`
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
 }
 
-testDatabaseConnection().catch(console.error);
+// Initialize Prisma client
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === "production") {
+  prisma = new PrismaClient();
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient();
+  }
+  prisma = global.prisma;
+}
 
 export default prisma;

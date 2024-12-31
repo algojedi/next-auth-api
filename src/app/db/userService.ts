@@ -1,4 +1,4 @@
-// import prisma from "../../../prisma/instance";
+import prisma from "../../../prisma/instance";
 import bcryptjs from 'bcryptjs';
 
 export interface CreateUserInput {
@@ -13,24 +13,24 @@ export interface CreateUserInput {
 const SALT_FACTOR = process.env.SALT_FACTOR || '10';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function createUser(someData : any) {
-  console.log({someData}) 
-}
+// export async function createUser(someData : any) {
+//   console.log({someData}) 
+// }
 
 // Create a user
-// export async function createUser(data: CreateUserInput) {
-  // console.log('creating user with prisma')
-  // const saltWorkFactor = parseInt(SALT_FACTOR);
-  // const hashedPassword = await bcryptjs.hash(data.password, saltWorkFactor);
+export async function createUser(data: CreateUserInput) {
+  console.log('creating user with prisma')
+  const saltWorkFactor = parseInt(SALT_FACTOR);
+  const hashedPassword = await bcryptjs.hash(data.password, saltWorkFactor);
 
-  // return prisma.user.create({
-  //   data: {
-  //     name: data.name,
-  //     email: data.email,
-  //     password: hashedPassword,
-  //   }
-  // });
-// }
+  return prisma.user.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      password: hashedPassword,
+    }
+  });
+}
 
 
 
