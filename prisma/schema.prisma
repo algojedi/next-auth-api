@@ -13,7 +13,6 @@ model User {
   name      String
   password  String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
   sessions  Session[] // One-to-many relationship with sessions
 }
 
@@ -23,5 +22,4 @@ model Session {
   user       User     @relation(fields: [userId], references: [id])
   valid      Boolean  @default(true)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 }

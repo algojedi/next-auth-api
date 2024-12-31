@@ -9,6 +9,7 @@ prisma.$on('beforeExit', () => {
 	console.log('Disconnecting Prisma');
 });
 
+console.log('is this being run ???????????')
 // Test the database connection and log a success message
 async function testDatabaseConnection() {
   try {
