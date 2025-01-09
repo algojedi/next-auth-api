@@ -37,7 +37,8 @@ async function getSessionFromRequest(request: Request) {
   const cookies = request.headers.get('cookie');
 	console.log({cookies});
   // Parse cookies and validate session...
-  return { user: { id: 1, name: 'John Doe', email: 'john@example.com' } }; // Mock user data
+  const mockUser = { user: { id: 1, name: 'John Doe', email: 'john@example.com' } }; // Mock user data
+  return cookies ? mockUser : null;
 }
 
 

@@ -30,6 +30,7 @@ function LoginPage() {
 	});
 
 	async function onSubmit(values: CreateSessionInput) {
+		console.log({ values });
 		try {
 			await axios.post(
 				`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/sessions`,
