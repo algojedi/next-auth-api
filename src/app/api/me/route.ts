@@ -1,11 +1,17 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
 	// mock a two second delay
-	await new Promise((resolve) => setTimeout(resolve, 2000));
   try {
     // Example: Get user data based on some authentication mechanism.
-    const user = await getUserFromSession(request); // Replace with your actual logic.
+
+    // const user = await getUserFromSession(request); // Replace with your actual logic.
+    
+    // get user from cookie 
+    // TODO: replace with actual authentication logic using sessions
+    const userCookies = await cookies();
+    const user = userCookies.get('user');
 
     // If user data is found, return it.
     if (user) {
@@ -24,7 +30,7 @@ export async function GET(request: Request) {
 }
 
 // Example of a function that retrieves user data, e.g., from a session or token
-async function getUserFromSession(request: Request) {
+export async function getUserFromSession(request: Request) {
   // Your logic here to get the user, e.g., using cookies or headers for authentication
   const session = await getSessionFromRequest(request); // Mock function, replace with actual logic
   if (!session || !session.user) return null;

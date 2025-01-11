@@ -24,6 +24,8 @@ function getGoogleOAuthURL(): string {
 
   const queryString = new URLSearchParams(options).toString();
 
+  console.log({queryString});
+
   return `${rootUrl}?${queryString}`;
 }
 

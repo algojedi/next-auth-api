@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import useSWR from "swr";
 import fetcher from "./util/fetcher";
 import getGoogleOAuthURL from "./util/get-google-url";
+import { useRouter } from "next/navigation";
 
 
   interface User {
@@ -21,6 +22,7 @@ import getGoogleOAuthURL from "./util/get-google-url";
     console.log({ processEnv : process.env.NEXT_PUBLIC_SERVER_ENDPOINT})
 
 export default function Home() {
+  const router = useRouter();
   const { data, error, isValidating } = useSWR<User | null>(
     `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`,
     fetcher,
@@ -37,10 +39,25 @@ export default function Home() {
       return <div>Loading...</div>;
     }
 
+  const handleLoginClick = async (e) => {
+    e.preventDefault();
+
+    try {
+
+      // TODO: save logging in cookies
+      // setCookie('Redirecting to Google login...')
+      router.push(getGoogleOAuthURL());
+
+    } catch (error) {
+      console.error('Error during login:', error);
+      // TODO: Handle error appropriately
+    }
+  };
+        //  <a href={getGoogleOAuthURL()}>Login with Google</a> 
+
     return (
       <div className={styles.container}>
-        <a href={getGoogleOAuthURL()}>Login with Google</a>
-        Please login
+        <button onClick={handleLoginClick}>Please login</button>
       </div>
     );
   };
