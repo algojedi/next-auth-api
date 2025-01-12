@@ -1,8 +1,8 @@
-import { createUser } from '@/app/db/userService';
+import { createUser } from '@/app/db/user-service';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  console.log('hitting users post')
+  console.log('hitting users post');
   const body = await request.json();
   console.log({ body });
   const { name, email, password } = body;

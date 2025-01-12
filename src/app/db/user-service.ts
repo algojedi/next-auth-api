@@ -4,7 +4,8 @@ import { comparePassword, hashPassword } from '../util/password';
 export interface CreateUserInput {
   name: string;
   email: string;
-  password: string;
+  password?: string;
+  picture?: string;
 }
 
 // Create a user
@@ -51,5 +52,26 @@ export async function validatePassword({
 export async function findUser(query: Partial<CreateUserInput>) {
   return prisma.user.findFirst({
     where: query,
+  });
+}
+
+// Update or create a user and assume picture is mandatory
+export async function upsertUser(data: CreateUserInput) {
+  const { name, email, picture } = data;
+  if (!name || !email || !picture) {
+    throw new Error('Missing required fields');
+  }
+  return prisma.user.upsert({
+    where: { email },
+    update: {
+      email,
+      name,
+      picture  
+    },
+    create: {
+      name,
+      email,
+      picture
+    },
   });
 }

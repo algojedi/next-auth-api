@@ -11,7 +11,8 @@ model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
   name      String
-  password  String
+  password  String?
+  picture   String?
   createdAt DateTime  @default(now())
   sessions  Session[] // One-to-many relationship with sessions
   @@map("app_user")
@@ -21,6 +22,9 @@ model Session {
   id         Int      @id @default(autoincrement())
   userId     Int
   user       User     @relation(fields: [userId], references: [id])
+  userAgent  String
   valid      Boolean  @default(true)
   createdAt  DateTime @default(now())
+
+  @@index([userId])
 }

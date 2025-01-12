@@ -2,6 +2,9 @@ import axios from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { GoogleUser } from '@/app/types/user-types';
+import { upsertUser } from '@/app/db/user-service';
+import { headers } from 'next/headers';
+import { createSession } from '@/app/db/session-service';
 
 interface GoogleTokenResult {
   access_token: string;
@@ -40,16 +43,27 @@ export async function GET(req: NextRequest, res: NextResponse) {
     // should receive an id_token and access_token
     const { access_token, id_token } = response.data;
     console.log({ access_token, id_token });
-
     // create a session for the user
+
+    // save the user info in the database
     const googleUser = jwt.decode(id_token) as GoogleUser;
     if (!googleUser) {
       throw new Error('could not decode google user');
     }
 
-    if (googleUser.email_verified !== true) {
+    if (!googleUser.email_verified) {
       throw new Error('google user is not verified');
     }
+
+    const { email, name, picture } = googleUser;
+    const user = await upsertUser({ email, name, picture });
+    console.log({ user });
+
+    // create a session for the user
+		// const userAgent = req.headers.get('user-agent');
+		const userAgent = (await headers()).get('user-agent');
+    const session = await createSession(user.id, userAgent || '')
+    console.log({ session });
 
     // create access_token and refresh_token for the user
 
@@ -71,7 +85,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   console.log({ body: req.body, code });
   const endpoint = process.env.GoogleClientSecret;
   console.log({ endpoint });
-  const URL = 'http://oauth2.googleapis.com/token';
+  // const URL = 'http://oauth2.googleapis.com/token';
   const values = {
     grant_type: 'authorization_code',
     code,
