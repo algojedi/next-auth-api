@@ -70,6 +70,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     // set the session cookie
 
     // redirect to the home page
+    return NextResponse.redirect('/');
   } catch (error) {
     // TODO: handle error
     console.log('error getting google oauth tokens');

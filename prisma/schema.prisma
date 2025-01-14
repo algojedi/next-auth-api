@@ -27,4 +27,5 @@ model Session {
   createdAt  DateTime @default(now())
 
   @@index([userId])
+  @@map("session") 
 }
