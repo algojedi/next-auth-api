@@ -42,11 +42,17 @@ export async function validatePassword({
   const user = await prisma.user.findUnique({
     where: { email },
   });
-  if (!user) return false;
+  if (!user) {
+    return false;
+  }
+  const userPassword = user.password;
+  const userEmail = user.email;
+
+  if (!userPassword || !userEmail) {
+    return false;
+  }
   
-  const isValid = await comparePassword(password, user.password);
-  if (!isValid) return false;
-  return true;
+  return await comparePassword(password, userPassword);
 }
 
 export async function findUser(query: Partial<CreateUserInput>) {
