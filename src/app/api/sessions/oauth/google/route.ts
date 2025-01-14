@@ -1,10 +1,13 @@
 import axios from 'axios';
+import config from 'config';
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { GoogleUser } from '@/app/types/user-types';
 import { upsertUser } from '@/app/db/user-service';
 import { headers } from 'next/headers';
 import { createSession } from '@/app/db/session-service';
+import { signJwt } from '@/app/util/jwt-utils';
+import { setCookie } from 'cookies-next';
 
 interface GoogleTokenResult {
   access_token: string;
@@ -60,17 +63,45 @@ export async function GET(req: NextRequest, res: NextResponse) {
     console.log({ user });
 
     // create a session for the user
-		// const userAgent = req.headers.get('user-agent');
-		const userAgent = (await headers()).get('user-agent');
-    const session = await createSession(user.id, userAgent || '')
+    // const userAgent = req.headers.get('user-agent');
+    const userAgent = (await headers()).get('user-agent');
+    const session = await createSession(user.id, userAgent || '');
     console.log({ session });
 
     // create access_token and refresh_token for the user
+    const accessToken = signJwt(
+      { ...user, sessionId: session.id },
+      {
+        expiresIn: config.get('accessTokenTtl'),
+      },
+    );
+    const refreshToken = signJwt(
+      { ...user, sessionId: session.id },
+      {
+        expiresIn: config.get('refreshTokenTtl'),
+      },
+    );
 
-    // set the session cookie
+    // Set the cookie
+    setCookie('refreshToken', refreshToken, {
+      res,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      // set maxAge to 1 year
+      maxAge: 60 * 60 * 24 * 365,
+    });
+    setCookie('accessToken', accessToken, {
+      res,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      // set maxAge to 15 minutes
+      maxAge: 60 * 15,
+    });
 
     // redirect to the home page
-    return NextResponse.redirect('/');
+    return NextResponse.redirect(config.get('baseUrl'));
   } catch (error) {
     // TODO: handle error
     console.log('error getting google oauth tokens');
