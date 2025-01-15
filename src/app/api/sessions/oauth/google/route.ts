@@ -1,25 +1,17 @@
 import axios from 'axios';
-import config from 'config';
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { GoogleUser } from '@/app/types/user-types';
+import { GoogleTokenResult, GoogleUser } from '@/app/types/user-types';
 import { upsertUser } from '@/app/db/user-service';
 import { headers } from 'next/headers';
 import { createSession } from '@/app/db/session-service';
 import { signJwt } from '@/app/util/jwt-utils';
 import { setCookie } from 'cookies-next';
 
-interface GoogleTokenResult {
-  access_token: string;
-  expires_in: number;
-  id_token: string;
-  refresh_token: string;
-  scope: string;
-  token_type: string;
-}
-
 export async function GET(req: NextRequest, res: NextResponse) {
   console.log('hitting get route for sessions/oauth/google -- GET');
+  const { origin, accessTokenTtl, refreshTokenTtl } = process.env;
+
   const code = req.nextUrl?.searchParams.get('code');
   console.log({ code });
 
@@ -63,7 +55,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
     console.log({ user });
 
     // create a session for the user
-    // const userAgent = req.headers.get('user-agent');
     const userAgent = (await headers()).get('user-agent');
     const session = await createSession(user.id, userAgent || '');
     console.log({ session });
@@ -72,51 +63,51 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const accessToken = signJwt(
       { ...user, sessionId: session.id },
       {
-        expiresIn: config.get('accessTokenTtl'),
+        expiresIn: accessTokenTtl
       },
     );
     const refreshToken = signJwt(
       { ...user, sessionId: session.id },
       {
-        expiresIn: config.get('refreshTokenTtl'),
+        expiresIn: refreshTokenTtl
       },
     );
 
-    // Set the cookie
-    setCookie('refreshToken', refreshToken, {
-      res,
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
+    };
+
+    // Set the cookie
+    setCookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      res,
       // set maxAge to 1 year
       maxAge: 60 * 60 * 24 * 365,
     });
     setCookie('accessToken', accessToken, {
+      ...cookieOptions,
       res,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       // set maxAge to 15 minutes
       maxAge: 60 * 15,
     });
 
     // redirect to the home page
-    return NextResponse.redirect(config.get('baseUrl'));
+    return NextResponse.redirect(origin as string);
+    
   } catch (error) {
     // TODO: handle error
-    console.log('error getting google oauth tokens');
+    console.log('error in GET /sessions/oauth/google');
     console.log({ error });
+    return NextResponse.redirect(`${origin}/oauth/error`);
   }
-
-  return NextResponse.json({ message: 'Session created', body: req.body });
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
   console.log('hitting get route for sessions/oauth/google -- POST');
   const code = req.body?.code;
-  console.log({ body: req.body, code });
   const endpoint = process.env.GoogleClientSecret;
-  console.log({ endpoint });
   // const URL = 'http://oauth2.googleapis.com/token';
   const values = {
     grant_type: 'authorization_code',
@@ -125,7 +116,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     client_secret: process.env.GoogleClientSecret,
     redirect_uri: process.env.GoogleOauthRedirectURL,
   };
-  console.log({ values });
-
+  console.log({ values, endpoint });
   return NextResponse.json({ message: 'Session created', body: req.body });
 }
