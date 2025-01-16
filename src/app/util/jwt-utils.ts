@@ -8,6 +8,7 @@ const publicKey = process.env.PUBLIC_KEY as string;
 console.log({ privateKey, publicKey });
 
 export function signJwt(object: object, options?: jwt.SignOptions | undefined) {
+  console.log({ object, options, privateKey });
   return jwt.sign(object, privateKey, {
     ...(options && options),
     algorithm: 'RS256',

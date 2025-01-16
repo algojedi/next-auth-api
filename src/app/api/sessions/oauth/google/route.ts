@@ -3,17 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { GoogleTokenResult, GoogleUser } from '@/app/types/user-types';
 import { upsertUser } from '@/app/db/user-service';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createSession } from '@/app/db/session-service';
 import { signJwt } from '@/app/util/jwt-utils';
-import { setCookie } from 'cookies-next';
 
 export async function GET(req: NextRequest, res: NextResponse) {
   console.log('hitting get route for sessions/oauth/google -- GET');
   const { origin, accessTokenTtl, refreshTokenTtl } = process.env;
 
   const code = req.nextUrl?.searchParams.get('code');
-  console.log({ code });
 
   // get the id and access_token using the code
   const endpoint = process.env.GoogleClientSecret;
@@ -26,7 +24,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
     client_secret: process.env.GoogleClientSecret,
     redirect_uri: process.env.GoogleOauthRedirectURL,
   };
-  console.log({ values });
 
   // get user info using the access_token
   try {
@@ -60,14 +57,17 @@ export async function GET(req: NextRequest, res: NextResponse) {
     console.log({ session });
 
     // create access_token and refresh_token for the user
+    const tokenPayload = { ...user, sessionId: session.id }
+
     const accessToken = signJwt(
-      { ...user, sessionId: session.id },
+      tokenPayload,
       {
         expiresIn: accessTokenTtl
       },
     );
+
     const refreshToken = signJwt(
-      { ...user, sessionId: session.id },
+      tokenPayload,
       {
         expiresIn: refreshTokenTtl
       },
@@ -76,21 +76,22 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'lax' as 'none' | 'lax' | 'strict' | undefined,
     };
 
+    console.log({ accessToken, refreshToken });
+
     // Set the cookie
-    setCookie('refreshToken', refreshToken, {
+    (await cookies()).set('refreshToken', refreshToken, {
       ...cookieOptions,
-      res,
-      // set maxAge to 1 year
-      maxAge: 60 * 60 * 24 * 365,
+      // res,
+      maxAge: 60 * 60 * 24 * 365, // set maxAge to 1 year
     });
-    setCookie('accessToken', accessToken, {
+
+    (await cookies()).set('accessToken', accessToken, {
       ...cookieOptions,
-      res,
-      // set maxAge to 15 minutes
-      maxAge: 60 * 15,
+      // res,
+      maxAge: 60 * 15, // set maxAge to 15 minutes
     });
 
     // redirect to the home page
