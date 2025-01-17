@@ -1,5 +1,4 @@
 import { verifyJwt } from '@/app/util/jwt-utils';
-import { access } from 'fs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
