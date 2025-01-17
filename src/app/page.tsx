@@ -1,24 +1,26 @@
-"use client"
+'use client';
 
-import styles from "./page.module.css";
-import useSWR from "swr";
-import fetcher from "./util/fetcher";
-import getGoogleOAuthURL from "./util/get-google-url";
-import { useRouter } from "next/navigation";
+import styles from './page.module.css';
+import useSWR from 'swr';
+import fetcher from './util/fetcher';
+import getGoogleOAuthURL from './util/get-google-url';
+import { useRouter } from 'next/navigation';
+import { logStore } from './store/logs';
+import { cookies } from 'next/headers';
 
-  interface User {
-    _id: string;
-    email: string;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
-    __v: number;
-    session: string;
-    iat: number;
-    exp: number;
-  }
+interface User {
+  _id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+  session: string;
+  iat: number;
+  exp: number;
+}
 
-    console.log({ processEnv : process.env.NEXT_PUBLIC_SERVER_ENDPOINT})
+console.log({ processEnv: process.env.NEXT_PUBLIC_SERVER_ENDPOINT });
 
 export default function Home() {
   const router = useRouter();
@@ -26,36 +28,62 @@ export default function Home() {
     `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`,
     fetcher,
   );
+  const logs = logStore((state) => state.logs);
+  const updateLogs = logStore((state) => state.setLog);
+  console.log({ logs }); 
+  const logList = (
+    <section>
+      {logs.map((log, i) => (
+        <h3 key={i}>{log}</h3>
+      ))}
+    </section>
+  );
+  const handleClearCookiesClick = async (e) => {
+    e.preventDefault();
+    updateLogs('Clicked clear cookies...');
+    // clear cookies
+    const userCookies = await cookies();
+    userCookies.delete('accessToken');
+  }
 
-    if (data) {
-      return <div>Welcome! {data.name}</div>;
-    }
-    if (error) {
-      console.error(error);
-      return <div>Failed to load user data</div>;
-    }
-    if (isValidating) {
-      return <div>Loading...</div>;
-    }
+  const clearCookiesSection = (
+    <section>
+      <button onClick={handleClearCookiesClick}>Clear Cookies</button>
+    </section>)
+        
+
+  if (data) {
+    return <div>
+      <div>Welcome! {data.name}</div>
+      {clearCookiesSection}
+      {logList}
+      </div>
+  }
+  if (error) {
+    console.error(error);
+    return <div>Failed to load user data</div>
+  }
+  if (isValidating) {
+    return <div>Loading...</div>
+  }
 
   const handleLoginClick = async (e) => {
     e.preventDefault();
+    updateLogs('Clicked log in...');
 
     try {
       // TODO: record progress
       router.push(getGoogleOAuthURL());
-
     } catch (error) {
       console.error('Error during login:', error);
       // TODO: Handle error appropriately
     }
   };
 
-    return (
-      <div className={styles.container}>
-        <button onClick={handleLoginClick}>Please login</button>
-      </div>
-    );
-  };
-
-
+  return (
+    <div className={styles.container}>
+      <button onClick={handleLoginClick}>Please login</button>
+      {logList}
+    </div>
+  );
+}
