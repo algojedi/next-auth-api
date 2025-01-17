@@ -1,3 +1,5 @@
+import { verifyJwt } from '@/app/util/jwt-utils';
+import { access } from 'fs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -11,15 +13,25 @@ export async function GET(request: Request) {
     // get user from cookie 
     // TODO: replace with actual authentication logic using sessions
     const userCookies = await cookies();
-    const user = userCookies.get('user');
+    const accessTokenCookie = userCookies.get('accessToken');
 
-    // If user data is found, return it.
+    if (!accessTokenCookie) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    } 
+
+    // decode the access token
+    const accessTokenJWT = verifyJwt(accessTokenCookie.value);
+    console.log({accessTokenJWT});
+    if (!accessTokenJWT || !accessTokenJWT.valid ) {
+      return NextResponse.json({ message: 'Invalid access token' }, { status: 401 });
+    }
+    const {decoded : user } = accessTokenJWT
+
     if (user) {
       return NextResponse.json(user, { status: 200 });
     }
 
     // If no user found (e.g., unauthenticated), return an error response.
-    return NextResponse.json({ message: 'User not found' }, { status: 404 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

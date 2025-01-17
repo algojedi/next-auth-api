@@ -6,7 +6,6 @@ import fetcher from "./util/fetcher";
 import getGoogleOAuthURL from "./util/get-google-url";
 import { useRouter } from "next/navigation";
 
-
   interface User {
     _id: string;
     email: string;
@@ -43,9 +42,7 @@ export default function Home() {
     e.preventDefault();
 
     try {
-
-      // TODO: save logging in cookies
-      // setCookie('Redirecting to Google login...')
+      // TODO: record progress
       router.push(getGoogleOAuthURL());
 
     } catch (error) {
@@ -53,7 +50,6 @@ export default function Home() {
       // TODO: Handle error appropriately
     }
   };
-        //  <a href={getGoogleOAuthURL()}>Login with Google</a> 
 
     return (
       <div className={styles.container}>

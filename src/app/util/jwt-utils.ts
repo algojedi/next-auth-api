@@ -9,6 +9,9 @@ console.log({ privateKey, publicKey });
 
 export function signJwt(object: object, options?: jwt.SignOptions | undefined) {
   console.log({ object, options, privateKey });
+  // newline chars need to be removed from the private key
+  // const privateKeyWithoutNewline = privateKey.replace(/\\n/g, '\n');
+  // return jwt.sign(object, privateKeyWithoutNewline, {
   return jwt.sign(object, privateKey, {
     ...(options && options),
     algorithm: 'RS256',
