@@ -6,7 +6,6 @@ import fetcher from './util/fetcher';
 import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { logStore } from './store/logs';
-import { cookies } from 'next/headers';
 
 interface User {
   _id: string;
@@ -33,17 +32,16 @@ export default function Home() {
   console.log({ logs }); 
   const logList = (
     <section>
-      {logs.map((log, i) => (
+      {logs.map((log : string, i : number) => (
         <h3 key={i}>{log}</h3>
       ))}
     </section>
   );
-  const handleClearCookiesClick = async (e) => {
+  const handleClearCookiesClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     updateLogs('Clicked clear cookies...');
     // clear cookies
-    const userCookies = await cookies();
-    userCookies.delete('accessToken');
+    
   }
 
   const clearCookiesSection = (
