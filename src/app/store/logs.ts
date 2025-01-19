@@ -4,12 +4,16 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 export interface LogState {
   logs: string[];
   setLog: (log: string) => void;
+  resetLogs: () => void;
 }
+
+const initialState = ['init'];
 
 export const logStore = create(
   persist<LogState>(
     (set) => ({
-      logs: ['init'],
+      logs: initialState,
+      resetLogs: () => set({ logs: initialState }),
       setLog: (log: string) =>
         set((state: LogState) => ({ logs: [...state.logs, log] })),
     }),

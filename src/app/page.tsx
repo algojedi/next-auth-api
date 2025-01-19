@@ -1,23 +1,14 @@
 'use client';
 
+import Image from 'next/image'
 import styles from './page.module.css';
 import useSWR from 'swr';
 import fetcher from './util/fetcher';
 import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { logStore } from './store/logs';
+import { User } from './types/user-types';
 
-interface User {
-  _id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  __v: number;
-  session: string;
-  iat: number;
-  exp: number;
-}
 
 console.log({ processEnv: process.env.NEXT_PUBLIC_SERVER_ENDPOINT });
 
@@ -29,6 +20,7 @@ export default function Home() {
   );
   const logs = logStore((state) => state.logs);
   const updateLogs = logStore((state) => state.setLog);
+  const resetLogs = logStore((state) => state.resetLogs);
   console.log({ logs }); 
   const logList = (
     <section>
@@ -37,11 +29,11 @@ export default function Home() {
       ))}
     </section>
   );
+
   const handleClearCookiesClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     updateLogs('Clicked clear cookies...');
-    // clear cookies
-    
+    resetLogs();
   }
 
   const clearCookiesSection = (
@@ -53,6 +45,14 @@ export default function Home() {
   if (data) {
     return <div>
       <div>Welcome! {data.name}</div>
+      <Image
+        src={data.picture}
+        alt="User profile picture"
+        width={96}
+        height={96} 
+        layout="intrinsic" 
+      />
+
       {clearCookiesSection}
       {logList}
       </div>

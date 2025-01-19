@@ -22,3 +22,15 @@ export interface GoogleTokenResult {
   token_type: string;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  password: string | null;
+  picture: string;
+  createdAt: string; // You can also use Date if you want to convert this to a Date object
+  sessionId: number;
+  iat: number;
+  exp: number;
+}
+
