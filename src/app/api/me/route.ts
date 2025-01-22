@@ -12,9 +12,11 @@ export async function GET(request: Request) {
     // get user from cookie 
     // TODO: replace with actual authentication logic using sessions
     const userCookies = await cookies();
+    console.log({userCookies});
     const accessTokenCookie = userCookies.get('accessToken');
 
     if (!accessTokenCookie) {
+      console.log({accessTokenCookie});
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     } 
 

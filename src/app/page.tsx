@@ -19,21 +19,28 @@ export default function Home() {
     fetcher,
   );
   const logs = logStore((state) => state.logs);
-  const updateLogs = logStore((state) => state.setLog);
-  const resetLogs = logStore((state) => state.resetLogs);
+  // const updateLogs = logStore((state) => state.setLog);
+  // const resetLogs = logStore((state) => state.resetLogs);
   console.log({ logs }); 
-  const logList = (
-    <section>
-      {logs.map((log : string, i : number) => (
-        <h3 key={i}>{log}</h3>
-      ))}
-    </section>
-  );
+
+  // if (data) {
+  //   updateLogs(`User data loaded via access token in cookie`)
+  // }
+
+  // if (logs.length === 4) {
+  //   return <div>Ooops, something went wrong...</div>
+  // }
+  // const logList = (
+  //   <section>
+  //     {logs.map((log : string, i : number) => (
+  //       <h3 key={i}>{log}</h3>
+  //     ))}
+  //   </section>
+  // );
 
   const handleClearCookiesClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    updateLogs('Clicked clear cookies...');
-    resetLogs();
+    // resetLogs();
   }
 
   const clearCookiesSection = (
@@ -54,7 +61,7 @@ export default function Home() {
       />
 
       {clearCookiesSection}
-      {logList}
+      {/* {logList} */}
       </div>
   }
   if (error) {
@@ -67,10 +74,10 @@ export default function Home() {
 
   const handleLoginClick = async (e) => {
     e.preventDefault();
-    updateLogs('Clicked log in...');
+    // updateLogs('Clicked log in...');
 
     try {
-      // TODO: record progress
+      // TODO: record progressGET
       router.push(getGoogleOAuthURL());
     } catch (error) {
       console.error('Error during login:', error);
@@ -81,7 +88,7 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <button onClick={handleLoginClick}>Please login</button>
-      {logList}
+      {/* {logList} */}
     </div>
   );
 }

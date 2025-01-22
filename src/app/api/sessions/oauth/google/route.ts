@@ -6,12 +6,19 @@ import { upsertUser } from '@/app/db/user-service';
 import { cookies, headers } from 'next/headers';
 import { createSession } from '@/app/db/session-service';
 import { signJwt } from '@/app/util/jwt-utils';
+// import logStore from '@/app/store/logs';
 
 export async function GET(req: NextRequest, res: NextResponse) {
-  console.log('hitting get route for sessions/oauth/google -- GET');
+  // const updateLogs = logStore((state) => state.setLog);
+  // updateLogs('hitting GET route for sessions/oauth/google');
   const { origin, accessTokenTtl, refreshTokenTtl } = process.env;
 
   const code = req.nextUrl?.searchParams.get('code');
+  if (!code) {
+    console.log('no code found in query params');
+    return NextResponse.redirect(`${origin}/oauth/error`);
+  }
+  // updateLogs('extracted code from query params');
 
   // get the id and access_token using the code
   const endpoint = process.env.GoogleClientSecret;
@@ -27,6 +34,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
   // get user info using the access_token
   try {
+    // updateLogs('POST request to Google OAuth includes client id and secret');
     const response = await axios.post<GoogleTokenResult>(URL, values, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -34,7 +42,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
     });
     // should receive an id_token and access_token
     const { access_token, id_token } = response.data;
-    console.log({ access_token, id_token });
+    // updateLogs('received id_token and access_token from Google OAuth token endpoint');
+    // console.log({ access_token, id_token });
     // create a session for the user
 
     // save the user info in the database
@@ -48,13 +57,14 @@ export async function GET(req: NextRequest, res: NextResponse) {
     }
 
     const { email, name, picture } = googleUser;
+    // updateLogs('decoded and then saved google user info from id_token');
     const user = await upsertUser({ email, name, picture });
-    console.log({ user });
+    // updateLogs('upserted user in app database');
 
     // create a session for the user
     const userAgent = (await headers()).get('user-agent');
     const session = await createSession(user.id, userAgent || '');
-    console.log({ session });
+    // updateLogs('created session for user in app database');
 
     // create access_token and refresh_token for the user
     const tokenPayload = { ...user, sessionId: session.id }
@@ -72,14 +82,13 @@ export async function GET(req: NextRequest, res: NextResponse) {
         expiresIn: refreshTokenTtl
       },
     );
+    // updateLogs('created access_token and refresh_token JWTs to send to user');
 
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax' as 'none' | 'lax' | 'strict' | undefined,
     };
-
-    console.log({ accessToken, refreshToken });
 
     // Set the cookie
     (await cookies()).set('refreshToken', refreshToken, {
@@ -93,6 +102,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
       // res,
       maxAge: 60 * 15, // set maxAge to 15 minutes
     });
+    // updateLogs('set refresh and access tokens in cookies');
+    // updateLogs('redirecting to home page');
 
     // redirect to the home page
     return NextResponse.redirect(origin as string);
@@ -106,7 +117,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
-  console.log('hitting get route for sessions/oauth/google -- POST');
+  console.log('hitting route for sessions/oauth/google -- POST');
+  // const updateLogs = logStore((state) => state.setLog);
+  // updateLogs('hitting POST route for sessions/oauth/google');
   const code = req.body?.code;
   const endpoint = process.env.GoogleClientSecret;
   // const URL = 'http://oauth2.googleapis.com/token';
@@ -117,6 +130,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
     client_secret: process.env.GoogleClientSecret,
     redirect_uri: process.env.GoogleOauthRedirectURL,
   };
-  console.log({ values, endpoint });
   return NextResponse.json({ message: 'Session created', body: req.body });
 }

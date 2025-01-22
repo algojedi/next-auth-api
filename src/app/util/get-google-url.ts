@@ -1,4 +1,9 @@
+import logStore from "../store/logs";
+
 function getGoogleOAuthURL(): string {
+
+  // const updateLogs = logStore((state) => state.setLog);
+
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
 
   const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT_URL;
@@ -20,11 +25,12 @@ function getGoogleOAuthURL(): string {
     ].join(' '),
   };
 
-	console.log({options});
-
+  // Create a query string to use as params from the options object
   const queryString = new URLSearchParams(options).toString();
 
   console.log({queryString});
+  // updateLogs('added redirect_uri, client_id as query params to Google OAuth URL') 
+  // updateLogs(`redirect to Google OAuth URL: ${rootUrl}...`)
 
   return `${rootUrl}?${queryString}`;
 }
