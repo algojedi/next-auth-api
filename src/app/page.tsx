@@ -32,7 +32,6 @@ export default function Home() {
 
   const handleClearCookiesClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    updateLogs('Clicked clear cookies...');
     resetLogs();
   }
 
@@ -50,7 +49,6 @@ export default function Home() {
         alt="User profile picture"
         width={96}
         height={96} 
-        layout="intrinsic" 
       />
 
       {clearCookiesSection}
