@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 import styles from './page.module.css';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import fetcher from './util/fetcher';
 import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { logStore } from './store/logs';
 import { User } from './types/user-types';
+import { useEffect } from 'react';
 
 function Home() {
   const router = useRouter();
@@ -16,31 +17,29 @@ function Home() {
     fetcher,
   );
   const logs = logStore((state) => state.logs);
-  // const updateLogs = logStore((state) => state.setLog);
-  // const resetLogs = logStore((state) => state.resetLogs);
+  const updateLogs = logStore((state) => state.setLog);
+  const resetLogs = logStore((state) => state.resetLogs);
   console.log({ logs });
 
-  // if (data) {
-  //   updateLogs(`User data loaded via access token in cookie`)
-  // }
+  useEffect(() => {
+    if (data) {
+      updateLogs('User data loaded via access token in cookie');
+    }
+  }, [data, updateLogs]); // Only runs when `data` or `updateLogs` changes
 
-  // if (logs.length === 4) {
-  //   return <div>Ooops, something went wrong...</div>
-  // }
-  // const logList = (
-  //   <section>
-  //     {logs.map((log : string, i : number) => (
-  //       <h3 key={i}>{log}</h3>
-  //     ))}
-  //   </section>
-  // );
+  const logList = (
+    <ul className={styles.logList}>
+      {logs.map((log : string, i : number) => (
+        <li key={i}>{log}</li>
+      ))}
+    </ul>
+  );
 
 
   const handleClearCookiesClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
   ) => {
     e.preventDefault();
-    // resetLogs();
     // make axios request to server to clear cookies
     try {
       console.log('making axios request...');
@@ -51,19 +50,21 @@ function Home() {
           credentials: 'include',
         },
       );
-      console.log({ response });
-      // updateLogs('Cleared cookies');
+      // clear the swr cache
+      if (response.ok) {
+        mutate(`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`, null, false);
+        resetLogs();
+      }
+
     } catch (error) {
       console.error('Error during logout:', error);
     }
   }
     const clearCookiesSection = (
       <section>
-        <button onClick={handleClearCookiesClick}>Clear Cookies</button>
+        <button onClick={handleClearCookiesClick} className={styles.button}>Clear Cookies</button>
       </section>
     );
-
-    console.log('byeeee !!!!!');
 
     if (data) {
       return (
@@ -77,7 +78,7 @@ function Home() {
           />
 
           {clearCookiesSection}
-          {/* {logList} */}
+          {logList}
         </div>
       );
     }
@@ -91,7 +92,7 @@ function Home() {
 
     const handleLoginClick = async (e) => {
       e.preventDefault();
-      // updateLogs('Clicked log in...');
+      updateLogs('Clicked log in...');
 
       try {
         // TODO: record progressGET
@@ -104,8 +105,8 @@ function Home() {
 
     return (
       <div className={styles.container}>
-        <button onClick={handleLoginClick}>Please login</button>
-        {/* {logList} */}
+        <button className={styles.button} onClick={handleLoginClick}>Please login</button>
+        {logList}
       </div>
     );
   };
