@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-	// mock a two second delay
   try {
+    console.log('GET /api/me endpoint hit');
     // Example: Get user data based on some authentication mechanism.
 
     // const user = await getUserFromSession(request); // Replace with your actual logic.

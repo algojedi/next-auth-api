@@ -1,3 +1,4 @@
+// TODO: erase this file
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {

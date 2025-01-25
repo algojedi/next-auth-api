@@ -9,3 +9,11 @@ export async function createSession(userId: number, userAgent: string) {
   });
   return session;
 }
+
+export async function deleteSession(sessionId: number) {
+  console.log('Deleting session with ID:', sessionId);
+  await prisma.session.delete({
+    where: { id: sessionId },
+  });
+}
+
