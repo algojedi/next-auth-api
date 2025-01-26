@@ -8,32 +8,36 @@ import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { logStore } from './store/logs';
 import { User } from './types/user-types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getLogs, resetLogs, saveLog } from './db/log-service';
 
 function Home() {
   const router = useRouter();
+  const [logs, setLogs] = useState<string[]>([]);
   const { data, error, isValidating } = useSWR<User | null>(
     `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`,
     fetcher,
   );
-  const logs = logStore((state) => state.logs);
   const updateLogs = logStore((state) => state.setLog);
-  const resetLogs = logStore((state) => state.resetLogs);
   console.log({ logs });
 
   useEffect(() => {
     if (data) {
-      updateLogs('User data loaded via access token in cookie');
+      saveLog('User data loaded via access token in cookie');
     }
   }, [data, updateLogs]); // Only runs when `data` or `updateLogs` changes
 
-  const logList = (
-    <ul className={styles.logList}>
-      {logs.map((log : string, i : number) => (
-        <li key={i}>{log}</li>
-      ))}
-    </ul>
-  );
+  useEffect(() => {
+    // Fetch or get logs when the component mounts or logs change
+    const logsFromStore = getLogs();
+    setLogs(logsFromStore);
+  }, []); 
+
+  const logList = <ul className={styles.logList}>
+  {logs.map((log, index) => (
+    <li key={index}>{log}</li>
+  ))}
+  </ul> 
 
 
   const handleClearCookiesClick = async (
@@ -42,7 +46,6 @@ function Home() {
     e.preventDefault();
     // make axios request to server to clear cookies
     try {
-      console.log('making axios request...');
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/sessions/logout`,
         {
@@ -54,6 +57,8 @@ function Home() {
       if (response.ok) {
         mutate(`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`, null, false);
         resetLogs();
+        setLogs([]);
+
       }
 
     } catch (error) {
@@ -92,7 +97,7 @@ function Home() {
 
     const handleLoginClick = async (e) => {
       e.preventDefault();
-      updateLogs('Clicked log in...');
+      saveLog('Clicked log in...');
 
       try {
         // TODO: record progressGET

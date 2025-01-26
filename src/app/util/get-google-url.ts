@@ -1,8 +1,8 @@
-import logStore from "../store/logs";
+import { saveLog } from "../db/log-service";
 
 function getGoogleOAuthURL(): string {
 
-  const updateLogs = logStore((state) => state.setLog);
+  // const updateLogs = logStore((state) => state.setLog);
 
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
 
@@ -30,8 +30,9 @@ function getGoogleOAuthURL(): string {
 
   console.log({queryString});
   const paramsMsg = `added redirect_uri, client_id as query params to Google OAuth URL` ;
-  const redirectMsg = `redirect to Google OAuth URL: ${rootUrl}...`;
-  updateLogs(paramsMsg + '\n' + redirectMsg)
+  const redirectMsg1 = `redirect to Google OAuth URL:`;
+  const redirectMsg2 = ` --> ${rootUrl}...`;
+  saveLog( paramsMsg, redirectMsg1, redirectMsg2)
   return `${rootUrl}?${queryString}`;
 }
 

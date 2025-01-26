@@ -19,7 +19,7 @@ export const logStore = create(
     }),
     {
       name: 'log-store',
-      storage: createJSONStorage(() => sessionStorage)
+      storage: createJSONStorage(() => localStorage)
     },
   ),
 );

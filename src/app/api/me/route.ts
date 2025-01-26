@@ -12,17 +12,14 @@ export async function GET(request: Request) {
     // get user from cookie 
     // TODO: replace with actual authentication logic using sessions
     const userCookies = await cookies();
-    console.log({userCookies});
     const accessTokenCookie = userCookies.get('accessToken');
 
     if (!accessTokenCookie) {
-      console.log({accessTokenCookie});
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     } 
 
     // decode the access token
     const accessTokenJWT = verifyJwt(accessTokenCookie.value);
-    console.log({accessTokenJWT});
     if (!accessTokenJWT || !accessTokenJWT.valid ) {
       return NextResponse.json({ message: 'Invalid access token' }, { status: 401 });
     }
