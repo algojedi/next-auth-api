@@ -1,5 +1,5 @@
 import prisma from '../../../prisma/instance';
-import { comparePassword, hashPassword } from '../util/password';
+import { comparePassword, hashPassword } from '../util/shared/password';
 
 export interface CreateUserInput {
   name: string;

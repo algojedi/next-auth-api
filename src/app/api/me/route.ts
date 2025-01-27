@@ -1,4 +1,4 @@
-import { verifyJwt } from '@/app/util/jwt-utils';
+import { verifyJwt } from '@/app/util/shared/jwt-utils';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -8,22 +8,25 @@ export async function GET(request: Request) {
     // Example: Get user data based on some authentication mechanism.
 
     // const user = await getUserFromSession(request); // Replace with your actual logic.
-    
-    // get user from cookie 
+
+    // get user from cookie
     // TODO: replace with actual authentication logic using sessions
     const userCookies = await cookies();
     const accessTokenCookie = userCookies.get('accessToken');
 
     if (!accessTokenCookie) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
-    } 
+    }
 
     // decode the access token
     const accessTokenJWT = verifyJwt(accessTokenCookie.value);
-    if (!accessTokenJWT || !accessTokenJWT.valid ) {
-      return NextResponse.json({ message: 'Invalid access token' }, { status: 401 });
+    if (!accessTokenJWT || !accessTokenJWT.valid) {
+      return NextResponse.json(
+        { message: 'Invalid access token' },
+        { status: 401 },
+      );
     }
-    const {decoded : user } = accessTokenJWT
+    const { decoded: user } = accessTokenJWT;
 
     if (user) {
       return NextResponse.json(user, { status: 200 });
@@ -51,10 +54,10 @@ export async function getUserFromSession(request: Request) {
 async function getSessionFromRequest(request: Request) {
   // Example: Fetch a session ID from cookies or headers
   const cookies = request.headers.get('cookie');
-	console.log({cookies});
+  console.log({ cookies });
   // Parse cookies and validate session...
-  const mockUser = { user: { id: 1, name: 'John Doe', email: 'john@example.com' } }; // Mock user data
+  const mockUser = {
+    user: { id: 1, name: 'John Doe', email: 'john@example.com' },
+  }; // Mock user data
   return cookies ? mockUser : null;
 }
-
-

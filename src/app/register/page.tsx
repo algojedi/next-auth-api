@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { createUserSchema } from '../util/zod-validation';
+import { createUserSchema } from '../util/shared/zod-validation';
 import { z } from 'zod';
 
 interface CreateUserInput {
