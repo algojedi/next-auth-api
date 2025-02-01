@@ -34,5 +34,6 @@ export async function saveServerLog(...newLogs: string[]) {
 	const logs = (await getCookie('logs'))?.value;
 	const parsedLogs = logs ? JSON.parse(logs) : [];
 	parsedLogs.push(...newLogs);
+  // TODO: cookies should be encoded before sending
 	(await cookies()).set('logs', JSON.stringify(parsedLogs));
 }

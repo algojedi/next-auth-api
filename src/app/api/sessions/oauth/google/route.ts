@@ -6,12 +6,7 @@ import { upsertUser } from '@/app/db/user-service';
 import { headers } from 'next/headers';
 import { createSession } from '@/app/db/session-service';
 import { signJwt } from '@/app/util/shared/jwt-utils';
-import { saveLog } from '@/app/db/log-service';
-import {
-  createCookie,
-  fifteenMinutes,
-  oneYear,
-} from '@/app/util/cookie-helper';
+import { createCookie, fifteenMinutes, oneYear, saveServerLog } from '@/app/util/server/cookies';
 
 export async function GET(req: NextRequest, res: NextResponse) {
   const { origin, accessTokenTtl, refreshTokenTtl } = process.env;
@@ -21,7 +16,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     console.log('no code found in query params');
     return NextResponse.redirect(`${origin}/oauth/error`);
   }
-  saveLog('extracted code from query params');
+  saveServerLog('extracted code from query params');
 
   // get the id and access_token using the code
   // const endpoint = process.env.GoogleClientSecret;
@@ -37,15 +32,16 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
   // get user info using the access_token
   try {
-    saveLog('POST request to Google OAuth includes client id and secret');
+    saveServerLog('POST request to Google OAuth includes client id and secret');
     const response = await axios.post<GoogleTokenResult>(URL, values, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
     // should receive an id_token and access_token
-    const { access_token, id_token } = response.data;
-    saveLog(
+    // const { access_token, id_token } = response.data;
+    const { _, id_token } = response.data;
+    saveServerLog(
       'received id_token and access_token from Google OAuth token endpoint',
     );
     // create a session for the user
@@ -61,14 +57,14 @@ export async function GET(req: NextRequest, res: NextResponse) {
     }
 
     const { email, name, picture } = googleUser;
-    saveLog('decoded and then saved google user info from id_token');
+    saveServerLog('decoded and then saved google user info from id_token');
     const user = await upsertUser({ email, name, picture });
-    saveLog('upserted user in app database');
+    saveServerLog('upserted user in app database');
 
     // create a session for the user
     const userAgent = (await headers()).get('user-agent');
     const session = await createSession(user.id, userAgent || '');
-    saveLog('created session for user in app database');
+    saveServerLog('created session for user in app database');
 
     // create access_token and refresh_token for the user
     const tokenPayload = { ...user, sessionId: session.id };
@@ -80,10 +76,10 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const refreshToken = signJwt(tokenPayload, {
       expiresIn: refreshTokenTtl,
     });
-    saveLog('created access_token and refresh_token JWTs to send to user');
+    saveServerLog('created access_token and refresh_token JWTs to send to user');
     createCookie('refreshToken', refreshToken, oneYear);
     createCookie('accessToken', accessToken, fifteenMinutes);
-    saveLog(
+    saveServerLog(
       'set refresh and access tokens in cookies',
       'redirecting to home page',
     );

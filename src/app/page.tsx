@@ -8,7 +8,7 @@ import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { User } from './types/user-types';
 import { useEffect, useState } from 'react';
-import { getLogs, resetLogs, saveLog } from './db/log-service';
+import { getLogs, resetLogs, saveLog } from './util/client/storage';
 
 function Home() {
   const router = useRouter();
@@ -27,7 +27,8 @@ function Home() {
 
   useEffect(() => {
     // Fetch or get logs when the component mounts or logs change
-    const logsFromStore = getLogs();
+    const logsFromStore = getLogs(); // session storage logs
+    console.log('useEffect setting logs')
     setLogs(logsFromStore);
   }, []);
 
@@ -45,6 +46,19 @@ function Home() {
       ))}
     </ul>
   );
+
+  // TODO: display server logs from cookie data -- must first decode the cookie data
+  // const serverLogList = (
+  //   <ul className={styles.logList}>
+  //     {logs.map((log, i) => (
+  //       <li
+  //         key={i}
+  //       >
+  //         {log}
+  //       </li>
+  //     ))}
+  //   </ul>
+  // );
 
   const handleClearCookiesClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -105,6 +119,14 @@ function Home() {
     return <div>Loading...</div>;
   }
 
+  const handleClearSessionClick = async (e) => {
+    e.preventDefault();
+    resetLogs();
+    setLogs([]);
+    
+  };
+
+
   const handleLoginClick = async (e) => {
     e.preventDefault();
     saveLog('Clicked log in...');
@@ -122,6 +144,9 @@ function Home() {
     <div className={styles.container}>
       <button className={styles.button} onClick={handleLoginClick}>
         Please login
+      </button>
+      <button className={styles.buttonClear} onClick={handleClearSessionClick}>
+        Clear Session
       </button>
       {logList}
     </div>

@@ -1,4 +1,4 @@
-import { saveLog } from "../db/log-service";
+import { saveLog } from "./client/storage";
 
 function getGoogleOAuthURL(): string {
 
