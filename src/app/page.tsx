@@ -8,16 +8,18 @@ import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { User } from './types/user-types';
 import { useEffect, useState } from 'react';
-import { getLogs, resetLogs, saveLog } from './util/client/storage';
+import { getLogs, getServerLogs, resetLogs, saveLog } from './util/client/storage';
 
 function Home() {
   const router = useRouter();
   const [logs, setLogs] = useState<string[]>([]);
+  const [serverLogs, setServerLogs] = useState<string[]>([]);
   const { data, error, isValidating } = useSWR<User | null>(
     `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/me`,
     fetcher,
   );
   console.log({ logs });
+  console.log({ serverLogs });
 
   useEffect(() => {
     if (data) {
@@ -26,10 +28,15 @@ function Home() {
   }, [data]);
 
   useEffect(() => {
-    // Fetch or get logs when the component mounts or logs change
-    const logsFromStore = getLogs(); // session storage logs
-    console.log('useEffect setting logs')
-    setLogs(logsFromStore);
+    const fetchLogs = async () => {
+      // Fetch or get logs when the component mounts or logs change
+      const logsFromStore = getLogs(); // session storage logs
+      const serverLogsFromStore = await getServerLogs(); // cookie logs
+      console.log('useEffect setting logs')
+      setLogs(logsFromStore);
+      setServerLogs(serverLogsFromStore);
+    };
+    fetchLogs();
   }, []);
 
   const logList = (
@@ -48,17 +55,17 @@ function Home() {
   );
 
   // TODO: display server logs from cookie data -- must first decode the cookie data
-  // const serverLogList = (
-  //   <ul className={styles.logList}>
-  //     {logs.map((log, i) => (
-  //       <li
-  //         key={i}
-  //       >
-  //         {log}
-  //       </li>
-  //     ))}
-  //   </ul>
-  // );
+  const serverLogList = (
+    <ul className={styles.logList}>
+      {serverLogs.map((sLog, i) => (
+        <li
+          key={i}
+        >
+          {sLog}
+        </li>
+      ))}
+    </ul>
+  );
 
   const handleClearCookiesClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -108,6 +115,7 @@ function Home() {
 
         {clearCookiesSection}
         {logList}
+        {serverLogList}
       </div>
     );
   }

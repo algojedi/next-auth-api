@@ -1,3 +1,4 @@
+import { getCookie } from "cookies-next";
 
 export function saveLog(...newLogs: string[]) {
 	// retrieve the log from sessionStorage and parse
@@ -14,4 +15,11 @@ export function resetLogs() {
 export function getLogs() : string[] {
 	const logs = sessionStorage.getItem('logs');
 	return logs ? JSON.parse(logs) : [];
+}
+
+// server logs are stored in a 'logs' cookie
+export async function getServerLogs() : Promise<string[]> {
+	const serverLogsJSON = await getCookie('logs');
+	if (!serverLogsJSON) return ['no server logs'];
+	return JSON.parse(serverLogsJSON);
 }
