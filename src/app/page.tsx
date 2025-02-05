@@ -8,7 +8,13 @@ import getGoogleOAuthURL from './util/get-google-url';
 import { useRouter } from 'next/navigation';
 import { User } from './types/user-types';
 import { useEffect, useState } from 'react';
-import { getLogs, getServerLogs, resetLogs, saveLog } from './util/client/storage';
+import {
+  getLogs,
+  getServerLogs,
+  resetLogs,
+  saveLog,
+} from './util/client/storage';
+import LogList from './log-list';
 
 function Home() {
   const router = useRouter();
@@ -32,40 +38,21 @@ function Home() {
       // Fetch or get logs when the component mounts or logs change
       const logsFromStore = getLogs(); // session storage logs
       const serverLogsFromStore = await getServerLogs(); // cookie logs
-      console.log('useEffect setting logs')
+      console.log('useEffect setting logs');
       setLogs(logsFromStore);
       setServerLogs(serverLogsFromStore);
     };
     fetchLogs();
   }, []);
 
-  const logList = (
-    <ul className={styles.logList}>
-      {logs.map((log, i) => (
-        <li
-          key={i}
-          className={
-            log.includes('redirect to Google OAuth URL:') ? styles.redText : ''
-          }
-        >
-          {log}
-        </li>
-      ))}
-    </ul>
+  const clientLogList = (
+    <LogList
+      logs={logs}
+      title='Client Logs'
+      redText='redirect to Google OAuth URL:'
+    />
   );
-
-  // TODO: display server logs from cookie data -- must first decode the cookie data
-  const serverLogList = (
-    <ul className={styles.logList}>
-      {serverLogs.map((sLog, i) => (
-        <li
-          key={i}
-        >
-          {sLog}
-        </li>
-      ))}
-    </ul>
-  );
+  const serverLogList = <LogList logs={serverLogs} title='Server Logs' />;
 
   const handleClearCookiesClick = async (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -114,7 +101,7 @@ function Home() {
         />
 
         {clearCookiesSection}
-        {logList}
+        {clientLogList}
         {serverLogList}
       </div>
     );
@@ -131,9 +118,7 @@ function Home() {
     e.preventDefault();
     resetLogs();
     setLogs([]);
-    
   };
-
 
   const handleLoginClick = async (e) => {
     e.preventDefault();
@@ -156,7 +141,7 @@ function Home() {
       <button className={styles.buttonClear} onClick={handleClearSessionClick}>
         Clear Session
       </button>
-      {logList}
+      {clientLogList}
     </div>
   );
 }

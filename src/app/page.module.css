@@ -10,9 +10,9 @@
   --button-secondary: #e3e1e1;
   --button-clear: #380303;
 
-  display: flex;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
   height: 100vh;
 }
 
@@ -24,6 +24,7 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin: .5rem;
 }
 
 .buttonClear {
@@ -34,16 +35,4 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
-}
-
-.logList {
-  list-style: none;
-  padding: 2rem;
-  background-color: var(--gray-alpha-100);
-  border-radius: 5px;
-  border: 1px solid var(--gray-alpha-200);
-}
-
-.redText {
-  color: red; 
 }
