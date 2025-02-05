@@ -90,6 +90,14 @@ function Home() {
   );
 
   if (data) {
+    return <div>
+      <div>Welcome! {data.name}</div>
+      <Image
+        src={data.picture}
+        alt="User profile picture"
+        width={96}
+        height={96} 
+      />
     return (
       <div>
         <div>Welcome! {data.name}</div>
@@ -106,6 +114,7 @@ function Home() {
       </div>
     );
   }
+
   if (error) {
     console.error(error);
     return <div>Failed to load user data</div>;
