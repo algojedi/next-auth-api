@@ -15,6 +15,8 @@ import {
   saveLog,
 } from './util/client/storage';
 import LogList from './log-list';
+import { PROFILE_PIC_WIDTH, PROFILE_PIC_HEIGHT } from './util/client/constants';
+
 
 function Home() {
   const router = useRouter();
@@ -90,24 +92,15 @@ function Home() {
   );
 
   if (data) {
-    return <div>
-      <div>Welcome! {data.name}</div>
-      <Image
-        src={data.picture}
-        alt="User profile picture"
-        width={96}
-        height={96} 
-      />
     return (
       <div>
         <div>Welcome! {data.name}</div>
         <Image
           src={data.picture}
           alt='User profile picture'
-          width={96}
-          height={96}
+          width={PROFILE_PIC_WIDTH}
+          height={PROFILE_PIC_HEIGHT}
         />
-
         {clearCookiesSection}
         {clientLogList}
         {serverLogList}
